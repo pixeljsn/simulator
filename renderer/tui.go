@@ -10,16 +10,18 @@ import (
 )
 
 const (
-	ansiReset   = "\033[0m"
-	ansiBold    = "\033[1m"
-	ansiDim     = "\033[2m"
-	ansiRed     = "\033[31m"
-	ansiGreen   = "\033[32m"
-	ansiYellow  = "\033[33m"
-	ansiBlue    = "\033[34m"
-	ansiMagenta = "\033[35m"
-	ansiCyan    = "\033[36m"
-	ansiBgBlack = "\033[40m"
+	ansiReset    = "\033[0m"
+	ansiBold     = "\033[1m"
+	ansiDim      = "\033[2m"
+	ansiRed      = "\033[31m"
+	ansiGreen    = "\033[32m"
+	ansiYellow   = "\033[33m"
+	ansiBlue     = "\033[34m"
+	ansiMagenta  = "\033[35m"
+	ansiCyan     = "\033[36m"
+	ansiBgBlack  = "\033[40m"
+	ansiBgNavy   = "\033[44m"
+	ansiBgPurple = "\033[45m"
 )
 
 type Renderer struct {
@@ -48,12 +50,12 @@ func (r *Renderer) RunLoop() {
 func (r *Renderer) View() string {
 	lines := []string{
 		colorize("╔════════════════════════════════════════════════════════════════════════════════╗", ansiBlue),
-		fmt.Sprintf("║ %s %-67s ║", colorize("⚡ MINI K8S + GPU CHAOS-VIZ", ansiBold+ansiMagenta), colorize(fmt.Sprintf("Cycle %d", r.eng.TickCount), ansiBold+ansiCyan)),
-		fmt.Sprintf("║ %s ║", pad(colorize("Legend: RED=hot busy  YELLOW=warming  GREEN=about-to-release  CYAN=idle", ansiDim), 78)),
-		fmt.Sprintf("║ %s ║", pad(colorize("States: RUNNABLE -> DISPATCH -> RUNNING -> (CONTEXT-SWITCH-OVERHEAD) -> RUNNABLE", ansiDim), 78)),
-		fmt.Sprintf("║ %s ║", pad(colorize("This Cycle ► "+r.cycleSummary(), ansiBold), 78)),
+		fmt.Sprintf("║ %s %-67s ║", colorize("🤖 AI INFRA CONTROL PLANE • GPU TRAINING GRID", ansiBold+ansiMagenta), colorize(fmt.Sprintf("Cycle %d", r.eng.TickCount), ansiBold+ansiCyan)),
+		fmt.Sprintf("║ %s ║", pad(colorize("Legend: RED=SM saturation  YELLOW=active kernels  GREEN=draining  CYAN=idle lanes", ansiDim), 78)),
+		fmt.Sprintf("║ %s ║", pad(colorize("Pipeline: TOKENIZE -> BATCH -> DISPATCH -> RUNNING -> SYNC/OVERHEAD -> QUEUED", ansiDim), 78)),
+		fmt.Sprintf("║ %s ║", pad(colorize("AI Cycle ► "+r.cycleSummary(), ansiBold), 78)),
 		colorize("╠════════════════════════════════════════════════════════════════════════════════╣", ansiBlue),
-		fmt.Sprintf("║ %s ║", pad(colorize("CPU CORE MATRIX", ansiBold+ansiYellow), 78)),
+		fmt.Sprintf("║ %s ║", pad(colorize("MODEL WORKER LANES (CPU)", ansiBgNavy+ansiBold+ansiYellow), 78)),
 	}
 
 	for _, c := range r.eng.CPU.Cores {
@@ -72,7 +74,7 @@ func (r *Renderer) View() string {
 
 	lines = append(lines,
 		colorize("╠════════════════════════════════════════════════════════════════════════════════╣", ansiBlue),
-		fmt.Sprintf("║ %s ║", pad(colorize("GPU CHAMBER", ansiBold+ansiMagenta), 78)),
+		fmt.Sprintf("║ %s ║", pad(colorize("GPU TRAINING CHAMBER", ansiBgPurple+ansiBold+ansiMagenta), 78)),
 	)
 
 	gpuState := colorize("IDLE", ansiCyan)
@@ -97,13 +99,13 @@ func (r *Renderer) View() string {
 	}
 	lines = append(lines,
 		colorize("╠════════════════════════════════════════════════════════════════════════════════╣", ansiBlue),
-		fmt.Sprintf("║ %s ║", pad(colorize("DISPATCH PIPELINE", ansiBold+ansiGreen), 78)),
-		fmt.Sprintf("║ %s ║", pad("RUNNABLE QUEUE ► "+queueView, 78)),
+		fmt.Sprintf("║ %s ║", pad(colorize("INFERENCE / TRAIN DISPATCH PIPELINE", ansiBgNavy+ansiBold+ansiGreen), 78)),
+		fmt.Sprintf("║ %s ║", pad("PROMPT/JOB QUEUE ► "+queueView, 78)),
 	)
 
 	lines = append(lines,
 		colorize("╠════════════════════════════════════════════════════════════════════════════════╣", ansiBlue),
-		fmt.Sprintf("║ %s ║", pad(colorize("CLUSTER NODE RADAR", ansiBold+ansiCyan), 78)),
+		fmt.Sprintf("║ %s ║", pad(colorize("AI CLUSTER NODE TELEMETRY", ansiBgNavy+ansiBold+ansiCyan), 78)),
 	)
 	for _, n := range r.eng.Nodes {
 		nodeRow := fmt.Sprintf("%s  CPU %s  MEM %s  GPU %s", n.Name, ratioBar(n.CPUAllocated, n.CPUCapacity, 12), ratioBar(n.MemAllocated, n.MemCapacity, 12), ratioBar(n.GPUAllocated, max(1, n.GPUCapacity), 6))
@@ -112,7 +114,7 @@ func (r *Renderer) View() string {
 
 	lines = append(lines,
 		colorize("╠════════════════════════════════════════════════════════════════════════════════╣", ansiBlue),
-		fmt.Sprintf("║ %s ║", pad(colorize("EVENT STORM (newest first)", ansiBold+ansiRed), 78)),
+		fmt.Sprintf("║ %s ║", pad(colorize("TELEMETRY STREAM (newest first)", ansiBgPurple+ansiBold+ansiRed), 78)),
 	)
 	for i, e := range r.eng.Events.Entries() {
 		if i == 6 {
