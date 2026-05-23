@@ -88,6 +88,29 @@ When you see a process or GPU job like `(8t)`, it means:
 With the default `300ms` tick duration and screen-clearing render loop, updates are very fast.
 Use a slower value (for example `1s` or `2s`) to observe transitions clearly.
 
+## Events explained
+
+The **Recent Events** panel is the simulator's reasoning trail.
+
+- Events are shown **newest first**.
+- Each event includes a tick stamp like `[T003]`, meaning it happened during simulation tick 3.
+- Use events to understand *why* a visible state changed between frames.
+
+Common event meanings in the current demo:
+
+- `CPU core scheduled <process>`: a core pulled a process from the ready queue and started running it.
+- `Context switch on core`: a process used up its time slice and the core incurred context-switch overhead.
+- `Process completed: <process>`: process reached zero remaining ticks and exited.
+- `GPU locked by job <job>`: GPU accepted a job and became non-preemptively occupied.
+- `GPU job finished: <job>`: running GPU job completed and GPU memory was released.
+- `CPU throttled by cgroup for process <process>`: simulated cgroup throttle signal triggered for that running process.
+
+### How to use events while watching
+
+1. See a change in CPU/GPU rows.
+2. Check the top-most event line for the cause on that tick.
+3. Correlate with queue order and ticks-left values to predict what should happen next.
+
 ## Test
 
 ```bash
