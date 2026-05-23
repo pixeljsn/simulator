@@ -10,19 +10,21 @@ import (
 )
 
 const (
-	ansiReset    = "\033[0m"
-	ansiBold     = "\033[1m"
-	ansiDim      = "\033[2m"
-	ansiRed      = "\033[31m"
-	ansiGreen    = "\033[32m"
-	ansiYellow   = "\033[33m"
-	ansiBlue     = "\033[34m"
-	ansiMagenta  = "\033[35m"
-	ansiCyan     = "\033[36m"
-	ansiBgBlack  = "\033[40m"
-	ansiBgNavy   = "\033[44m"
-	ansiBgPurple = "\033[45m"
-	ansiWhite    = "\033[97m"
+	ansiReset      = "\033[0m"
+	ansiBold       = "\033[1m"
+	ansiDim        = "\033[2m"
+	ansiRed        = "\033[91m"
+	ansiGreen      = "\033[92m"
+	ansiYellow     = "\033[93m"
+	ansiBlue       = "\033[94m"
+	ansiMagenta    = "\033[95m"
+	ansiCyan       = "\033[96m"
+	ansiSlate      = "\033[90m"
+	ansiBgBlack    = "\033[40m"
+	ansiBgNavy     = "\033[48;5;17m"
+	ansiBgPurple   = "\033[48;5;54m"
+	ansiBgCharcoal = "\033[48;5;235m"
+	ansiIvory      = "\033[38;5;230m"
 )
 
 type Renderer struct {
@@ -51,10 +53,10 @@ func (r *Renderer) RunLoop() {
 func (r *Renderer) View() string {
 	lines := []string{
 		colorize("╔════════════════════════════════════════════════════════════════════════════════╗", ansiBold+ansiBlue),
-		fmt.Sprintf("║ %s %-67s ║", colorize("✨ 🤖 AI INFRA CONTROL PLANE • GPU TRAINING GRID ✨", ansiBold+ansiMagenta), colorize(fmt.Sprintf("Cycle %d", r.eng.TickCount), ansiBold+ansiCyan)),
-		fmt.Sprintf("║ %s ║", pad(colorize("Legend: RED=SM saturation  YELLOW=active kernels  GREEN=draining  CYAN=idle lanes", ansiDim), 78)),
+		fmt.Sprintf("║ %s %-67s ║", colorize("🤖 AI INFRA CONTROL PLANE • GPU TRAINING GRID", ansiBold+ansiMagenta), colorize(fmt.Sprintf("Cycle %d", r.eng.TickCount), ansiBold+ansiCyan)),
+		fmt.Sprintf("║ %s ║", pad(colorize("Legend: RED=high load  YELLOW=active  GREEN=draining  CYAN=idle", ansiDim), 78)),
 		fmt.Sprintf("║ %s ║", pad(colorize("Pipeline: TOKENIZE -> BATCH -> DISPATCH -> RUNNING -> SYNC/OVERHEAD -> QUEUED", ansiDim), 78)),
-		fmt.Sprintf("║ %s ║", pad(colorize("AI Cycle ► "+r.cycleSummary(), ansiBold+ansiWhite), 78)),
+		fmt.Sprintf("║ %s ║", pad(colorize("AI Cycle ► "+r.cycleSummary(), ansiBgCharcoal+ansiBold+ansiIvory), 78)),
 		colorize("╠════════════════════════════════════════════════════════════════════════════════╣", ansiBold+ansiBlue),
 		fmt.Sprintf("║ %s ║", pad(colorize("  ◉ MODEL WORKER LANES (CPU)", ansiBgNavy+ansiBold+ansiYellow), 78)),
 	}
@@ -74,7 +76,7 @@ func (r *Renderer) View() string {
 	}
 
 	lines = append(lines,
-		colorize("╠════════════════════════════════════════════════════════════════════════════════╣", ansiBlue),
+		colorize("╠════════════════════════════════════════════════════════════════════════════════╣", ansiSlate),
 		fmt.Sprintf("║ %s ║", pad(colorize("  ◉ GPU TRAINING CHAMBER", ansiBgPurple+ansiBold+ansiMagenta), 78)),
 	)
 
