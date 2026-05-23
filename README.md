@@ -64,6 +64,11 @@ go run . -interactive -max-ticks=0 -tick=1s
   - `LOCKED by <job> (X ticks left in GPU job)` means GPU is monopolized by one non-preemptive job.
 - **Ready Queue** shows next-dispatch order from left to right.
 - **Recent Events** explains *why* visible changes happened.
+- **Color cues** (ANSI terminals):
+  - **Red**: heavily engaged (many ticks left before release).
+  - **Yellow**: in-progress, mid-flight.
+  - **Green**: about to release (few ticks left).
+  - **Cyan**: idle.
 - **This Tick Summary** is a one-line real-time explanation of what changed on the current tick.
 - **Status terms** are intentionally technical and map to scheduler behavior:
   - `RUNNABLE`: waiting in ready queue, eligible for CPU.

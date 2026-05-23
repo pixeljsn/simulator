@@ -9,6 +9,14 @@ import (
 	"simulator/engine"
 )
 
+const (
+	ansiReset  = "\033[0m"
+	ansiRed    = "\033[31m"
+	ansiGreen  = "\033[32m"
+	ansiYellow = "\033[33m"
+	ansiCyan   = "\033[36m"
+)
+
 type Renderer struct {
 	eng     *engine.Engine
 	stopped atomic.Bool
@@ -45,16 +53,20 @@ func (r *Renderer) View() string {
 	for _, c := range r.eng.CPU.Cores {
 		state := "IDLE"
 		if c.ContextSwitchTax > 0 {
-			state = fmt.Sprintf("CONTEXT-SWITCH-OVERHEAD (%d tick left)", c.ContextSwitchTax)
+			state = colorize(fmt.Sprintf("CONTEXT-SWITCH-OVERHEAD (%d tick left)", c.ContextSwitchTax), ansiYellow)
 		} else if c.Running != nil {
-			state = fmt.Sprintf("RUNNING %-12s (%d ticks left)", c.Running.Name, c.Running.RemainingTicks)
+			state = colorize(fmt.Sprintf("RUNNING %-12s (%d ticks left)", c.Running.Name, c.Running.RemainingTicks), cpuStateColor(c.Running.RemainingTicks))
+		} else {
+			state = colorize(state, ansiCyan)
 		}
 		lines = append(lines, fmt.Sprintf("| CPU%-2d | %-72s|", c.ID, state))
 	}
 
 	gpu := "IDLE"
 	if r.eng.GPU.RunningJob != nil {
-		gpu = fmt.Sprintf("LOCKED by %-12s (%d ticks left)", r.eng.GPU.RunningJob.JobID, r.eng.GPU.RunningJob.RemainingTicks)
+		gpu = colorize(fmt.Sprintf("LOCKED by %-12s (%d ticks left)", r.eng.GPU.RunningJob.JobID, r.eng.GPU.RunningJob.RemainingTicks), gpuStateColor(r.eng.GPU.RunningJob.RemainingTicks))
+	} else {
+		gpu = colorize(gpu, ansiCyan)
 	}
 
 	lines = append(lines,
@@ -87,6 +99,30 @@ func (r *Renderer) View() string {
 	}
 	lines = append(lines, "+--------------------------------------------------------------------------------+")
 	return strings.Join(lines, "\n")
+}
+
+func colorize(s, color string) string {
+	return color + s + ansiReset
+}
+
+func cpuStateColor(remaining int) string {
+	if remaining <= 2 {
+		return ansiGreen
+	}
+	if remaining <= 5 {
+		return ansiYellow
+	}
+	return ansiRed
+}
+
+func gpuStateColor(remaining int) string {
+	if remaining <= 2 {
+		return ansiGreen
+	}
+	if remaining <= 6 {
+		return ansiYellow
+	}
+	return ansiRed
 }
 
 func (r *Renderer) tickSummary() string {
