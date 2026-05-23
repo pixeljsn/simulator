@@ -160,6 +160,7 @@ The dashboard now uses an AI-infra themed visual language:
 - Control-plane style header (`AI INFRA CONTROL PLANE`)
 - Terminology aligned to AI workloads (prompt/job queue, active kernels, training chamber)
 - Dark background with neon section accents for an NOC-style monitoring feel
+- Decorative section bullets, brighter borders, and highlighted cycle summary for a cleaner premium dashboard look
 - Telemetry-first panel naming to mimic real infra observability screens
 
 Recommended for best experience:
