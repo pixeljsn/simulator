@@ -133,3 +133,22 @@ go test ./...
 
 - This is a conceptual simulator only.
 - It does **not** use real containers, real Kubernetes APIs, or real GPUs.
+
+## Crazy visualization mode
+
+The default renderer now uses a high-contrast "crazy" dashboard style:
+
+- Neon-like ANSI colors and boxed panels
+- CPU/GPU heat bars that shrink as jobs approach completion
+- GPU memory pressure bar
+- Node capacity radar bars for CPU/MEM/GPU
+- Tick-level summary plus event storm feed
+
+If your terminal does not support ANSI colors, output still works but appears less vivid.
+
+Recommended command for the best effect:
+
+```bash
+go run . -tick=500ms -max-ticks=120
+```
+
