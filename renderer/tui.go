@@ -37,22 +37,24 @@ func (r *Renderer) View() string {
 		"+--------------------------------------------------------------------------------+",
 		fmt.Sprintf("| Tick %-74d|", r.eng.TickCount),
 		"| Legend: tick = one simulation step; 'ticks left' = remaining work units.       |",
+		"| Status terms: RUNNING, RUNNABLE, DISPATCH, CONTEXT-SWITCH-OVERHEAD, LOCKED.   |",
+		fmt.Sprintf("| This Tick Summary: %-60s|", r.tickSummary()),
 		"|                                                                                |",
 	}
 
 	for _, c := range r.eng.CPU.Cores {
 		state := "IDLE"
 		if c.ContextSwitchTax > 0 {
-			state = fmt.Sprintf("IDLE (context switch overhead: %d tick left)", c.ContextSwitchTax)
+			state = fmt.Sprintf("CONTEXT-SWITCH-OVERHEAD (%d tick left)", c.ContextSwitchTax)
 		} else if c.Running != nil {
-			state = fmt.Sprintf("RUNNING %-12s (%d ticks left in process)", c.Running.Name, c.Running.RemainingTicks)
+			state = fmt.Sprintf("RUNNING %-12s (%d ticks left)", c.Running.Name, c.Running.RemainingTicks)
 		}
 		lines = append(lines, fmt.Sprintf("| CPU%-2d | %-72s|", c.ID, state))
 	}
 
 	gpu := "IDLE"
 	if r.eng.GPU.RunningJob != nil {
-		gpu = fmt.Sprintf("LOCKED by %-12s (%d ticks left in GPU job)", r.eng.GPU.RunningJob.JobID, r.eng.GPU.RunningJob.RemainingTicks)
+		gpu = fmt.Sprintf("LOCKED by %-12s (%d ticks left)", r.eng.GPU.RunningJob.JobID, r.eng.GPU.RunningJob.RemainingTicks)
 	}
 
 	lines = append(lines,
@@ -69,7 +71,7 @@ func (r *Renderer) View() string {
 	if queueView == "" {
 		queueView = "(empty)"
 	}
-	lines = append(lines, fmt.Sprintf("| Ready Queue (next dispatch order): %-43s|", queueView))
+	lines = append(lines, fmt.Sprintf("| Ready Queue (RUNNABLE; next DISPATCH order): %-36s|", queueView))
 	lines = append(lines, "|                                                                                |")
 
 	for _, n := range r.eng.Nodes {
@@ -85,4 +87,25 @@ func (r *Renderer) View() string {
 	}
 	lines = append(lines, "+--------------------------------------------------------------------------------+")
 	return strings.Join(lines, "\n")
+}
+
+func (r *Renderer) tickSummary() string {
+	events := r.eng.Events.Entries()
+	if len(events) == 0 {
+		return "No events recorded yet"
+	}
+	prefix := fmt.Sprintf("[T%03d]", r.eng.TickCount)
+	parts := make([]string, 0, 3)
+	for _, e := range events {
+		if strings.HasPrefix(e, prefix) {
+			parts = append(parts, strings.TrimSpace(strings.TrimPrefix(e, prefix)))
+			if len(parts) == 3 {
+				break
+			}
+		}
+	}
+	if len(parts) == 0 {
+		return "No state transition event this tick"
+	}
+	return strings.Join(parts, " | ")
 }

@@ -64,6 +64,13 @@ go run . -interactive -max-ticks=0 -tick=1s
   - `LOCKED by <job> (X ticks left in GPU job)` means GPU is monopolized by one non-preemptive job.
 - **Ready Queue** shows next-dispatch order from left to right.
 - **Recent Events** explains *why* visible changes happened.
+- **This Tick Summary** is a one-line real-time explanation of what changed on the current tick.
+- **Status terms** are intentionally technical and map to scheduler behavior:
+  - `RUNNABLE`: waiting in ready queue, eligible for CPU.
+  - `DISPATCH`: selected from ready queue to run on a core.
+  - `RUNNING`: currently consuming CPU/GPU ticks.
+  - `CONTEXT-SWITCH-OVERHEAD`: temporary core stall during switch penalty.
+  - `LOCKED`: GPU monopolized by one non-preemptive job.
 
 ## Understanding ticks
 
