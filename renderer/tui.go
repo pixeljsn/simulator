@@ -19,6 +19,7 @@ const (
 	ansiBlue    = "\033[34m"
 	ansiMagenta = "\033[35m"
 	ansiCyan    = "\033[36m"
+	ansiBgBlack = "\033[40m"
 )
 
 type Renderer struct {
@@ -35,7 +36,7 @@ func (r *Renderer) RunLoop() {
 	defer ticker.Stop()
 	for !r.stopped.Load() {
 		r.eng.Tick()
-		fmt.Print("\033[H\033[2J")
+		fmt.Print("\033[H\033[2J" + ansiBgBlack)
 		fmt.Println(r.View())
 		if r.eng.Config.MaxTicks > 0 && r.eng.TickCount >= r.eng.Config.MaxTicks {
 			r.Stop()
@@ -47,10 +48,10 @@ func (r *Renderer) RunLoop() {
 func (r *Renderer) View() string {
 	lines := []string{
 		colorize("╔════════════════════════════════════════════════════════════════════════════════╗", ansiBlue),
-		fmt.Sprintf("║ %s %-67s ║", colorize("⚡ MINI K8S + GPU CHAOS-VIZ", ansiBold+ansiMagenta), colorize(fmt.Sprintf("Tick %d", r.eng.TickCount), ansiBold+ansiCyan)),
+		fmt.Sprintf("║ %s %-67s ║", colorize("⚡ MINI K8S + GPU CHAOS-VIZ", ansiBold+ansiMagenta), colorize(fmt.Sprintf("Cycle %d", r.eng.TickCount), ansiBold+ansiCyan)),
 		fmt.Sprintf("║ %s ║", pad(colorize("Legend: RED=hot busy  YELLOW=warming  GREEN=about-to-release  CYAN=idle", ansiDim), 78)),
 		fmt.Sprintf("║ %s ║", pad(colorize("States: RUNNABLE -> DISPATCH -> RUNNING -> (CONTEXT-SWITCH-OVERHEAD) -> RUNNABLE", ansiDim), 78)),
-		fmt.Sprintf("║ %s ║", pad(colorize("This Tick ► "+r.tickSummary(), ansiBold), 78)),
+		fmt.Sprintf("║ %s ║", pad(colorize("This Cycle ► "+r.cycleSummary(), ansiBold), 78)),
 		colorize("╠════════════════════════════════════════════════════════════════════════════════╣", ansiBlue),
 		fmt.Sprintf("║ %s ║", pad(colorize("CPU CORE MATRIX", ansiBold+ansiYellow), 78)),
 	}
@@ -59,10 +60,10 @@ func (r *Renderer) View() string {
 		state := colorize("IDLE", ansiCyan)
 		meter := colorize("░░░░░░░░░░", ansiCyan)
 		if c.ContextSwitchTax > 0 {
-			state = colorize(fmt.Sprintf("CONTEXT-SWITCH-OVERHEAD (%d tick left)", c.ContextSwitchTax), ansiYellow)
+			state = colorize(fmt.Sprintf("CONTEXT-SWITCH-OVERHEAD (%d cycle left)", c.ContextSwitchTax), ansiYellow)
 			meter = colorize("▓▓░░░░░░░░", ansiYellow)
 		} else if c.Running != nil {
-			state = colorize(fmt.Sprintf("RUNNING %-12s (%d ticks left)", c.Running.Name, c.Running.RemainingTicks), cpuStateColor(c.Running.RemainingTicks))
+			state = colorize(fmt.Sprintf("RUNNING %-12s (%d cycles left)", c.Running.Name, c.Running.RemainingTicks), cpuStateColor(c.Running.RemainingTicks))
 			meter = heatBar(c.Running.RemainingTicks, 12)
 		}
 		row := fmt.Sprintf("CPU%-2d %s  %s", c.ID, meter, state)
@@ -78,7 +79,7 @@ func (r *Renderer) View() string {
 	gpuMeter := colorize("░░░░░░░░░░░░", ansiCyan)
 	if r.eng.GPU.RunningJob != nil {
 		rem := r.eng.GPU.RunningJob.RemainingTicks
-		gpuState = colorize(fmt.Sprintf("LOCKED by %-12s (%d ticks left)", r.eng.GPU.RunningJob.JobID, rem), gpuStateColor(rem))
+		gpuState = colorize(fmt.Sprintf("LOCKED by %-12s (%d cycles left)", r.eng.GPU.RunningJob.JobID, rem), gpuStateColor(rem))
 		gpuMeter = heatBar(rem, 18)
 	}
 	lines = append(lines,
@@ -240,7 +241,7 @@ func max(a, b int) int {
 	return b
 }
 
-func (r *Renderer) tickSummary() string {
+func (r *Renderer) cycleSummary() string {
 	events := r.eng.Events.Entries()
 	if len(events) == 0 {
 		return "No events recorded yet"
@@ -256,7 +257,7 @@ func (r *Renderer) tickSummary() string {
 		}
 	}
 	if len(parts) == 0 {
-		return "No state transition event this tick"
+		return "No state transition event this cycle"
 	}
 	return strings.Join(parts, " | ")
 }
