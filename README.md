@@ -123,6 +123,62 @@ Common event meanings in the current demo:
 2. Check the top-most event line for the cause on that cycle.
 3. Correlate with queue order and cycles-left values to predict what should happen next.
 
+
+## End-to-end lifecycle walkthrough (what you are seeing)
+
+This simulator advances in **cycles**. On each cycle, the order is:
+
+1. CPU scheduler step
+2. GPU scheduler step
+3. cgroup-throttle signal check
+4. render updated dashboard
+
+This ordering is important because events in the telemetry stream are produced from those steps in that sequence.
+
+### CPU lifecycle in this demo
+
+For each CPU process (`ingest`, `preprocess`, `sidecar`), the typical flow is:
+
+`RUNNABLE (ready queue) -> DISPATCHED to core -> RUNNING -> (maybe CONTEXT-SWITCH-OVERHEAD) -> RUNNABLE again -> ... -> COMPLETED`
+
+Interpretation tips:
+
+- `CPU core scheduled <process>` means dispatch happened.
+- `Context switch on core` means the process used up its time slice and the core pays switch overhead for a cycle.
+- `Process completed: <process>` means remaining work reached zero.
+- CPU `IDLE` means no process currently assigned on that cycle; it does **not** always mean no runnable work exists.
+
+### GPU lifecycle in this demo
+
+For each GPU job (`train-a`, `embed-b`), the flow is:
+
+`QUEUED -> LOCKED (running, non-preemptive) -> FINISHED -> next queued job can start`
+
+Interpretation tips:
+
+- `GPU locked by job <job>` means the GPU accepted a job and is now monopolized.
+- `GPU job finished: <job>` means lock and reserved memory were released.
+- While one job is running, others wait in queue (no GPU preemption in this model).
+
+### Are CPU and GPU workloads separate?
+
+Yes. In the current simulator they are modeled as separate scheduling domains:
+
+- CPU domain: `Process` queue (`ingest`, `preprocess`, `sidecar`)
+- GPU domain: `GPUJob` queue (`train-a`, `embed-b`)
+
+They advance in the same cycle loop but are scheduled independently.
+
+### Reading one screen quickly
+
+Use this checklist each cycle:
+
+1. **AI Cycle summary**: what changed now.
+2. **CPU lanes**: who is running vs overhead/idle.
+3. **GPU chamber**: whether GPU is locked and how many cycles left.
+4. **Prompt/Job queue**: upcoming dispatch order.
+5. **Telemetry stream**: exact event cause (newest first).
+
 ## Test
 
 ```bash
