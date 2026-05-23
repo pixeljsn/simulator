@@ -53,6 +53,18 @@ Interactive example:
 go run . -interactive -max-ticks=0 -tick=1s
 ```
 
+
+### Reading the screen quickly
+
+- **Tick N**: the simulator has advanced N steps.
+- **CPU row**:
+  - `RUNNING <name> (X ticks left in process)` means that process needs X more ticks on CPU.
+  - `IDLE (context switch overhead: 1 tick left)` means the core is intentionally paused for switch cost, not necessarily out of work.
+- **GPU row**:
+  - `LOCKED by <job> (X ticks left in GPU job)` means GPU is monopolized by one non-preemptive job.
+- **Ready Queue** shows next-dispatch order from left to right.
+- **Recent Events** explains *why* visible changes happened.
+
 ## Understanding ticks
 
 Think of a **tick** as one simulation "frame" or "clock step".
