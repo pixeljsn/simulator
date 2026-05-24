@@ -237,8 +237,23 @@ The dashboard now uses an AI-infra themed visual language:
 - Standard operator palette (amber/green/red/cyan) adapted for dark terminals
 - Decorative section bullets, brighter borders, and highlighted cycle summary for a cleaner premium dashboard look
 - Telemetry-first panel naming to mimic real infra observability screens
+- Optional cinematic green-terminal overlays inspired by classic movie consoles
 
 Recommended for best experience:
+
+```bash
+go run . -tick=500ms -max-ticks=120
+```
+
+## Cinematic console style
+
+The renderer now adds a Hollywood-inspired terminal layer on top of the dashboard:
+
+- Boot banner with matrix-green styling
+- Dynamic "CINEMATIC SIGNAL FEED" line that animates with cycle progression
+- Keeps real scheduler telemetry intact while adding an atmospheric control-room feel
+
+Run normally:
 
 ```bash
 go run . -tick=500ms -max-ticks=120

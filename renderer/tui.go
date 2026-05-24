@@ -25,6 +25,8 @@ const (
 	ansiBgPurple   = "\033[48;5;54m"
 	ansiBgCharcoal = "\033[48;5;235m"
 	ansiIvory      = "\033[38;5;230m"
+	ansiMatrix     = "\033[38;5;46m"
+	ansiBgMatrix   = "\033[48;5;22m"
 )
 
 type Renderer struct {
@@ -52,6 +54,7 @@ func (r *Renderer) RunLoop() {
 
 func (r *Renderer) View() string {
 	lines := []string{
+		colorize("█▓▒░ SYSTEM BOOT: AI INFRA VISUAL CONSOLE • CINEMATIC MODE ░▒▓█", ansiBgMatrix+ansiBold+ansiMatrix),
 		colorize("╔════════════════════════════════════════════════════════════════════════════════╗", ansiBold+ansiBlue),
 		fmt.Sprintf("║ %s %-67s ║", colorize("🤖 AI INFRA CONTROL PLANE • GPU TRAINING GRID", ansiBold+ansiMagenta), colorize(fmt.Sprintf("Cycle %d", r.eng.TickCount), ansiBold+ansiCyan)),
 		fmt.Sprintf("║ %s ║", pad(colorize("Legend: RED=high load  YELLOW=active  GREEN=draining  CYAN=idle", ansiDim), 78)),
@@ -141,8 +144,20 @@ func (r *Renderer) View() string {
 		lines = append(lines, fmt.Sprintf("║ %s ║", pad("• "+e, 78)))
 	}
 
+	lines = append(lines,
+		colorize("╠════════════════════════════════════════════════════════════════════════════════╣", ansiSlate),
+		fmt.Sprintf("║ %s ║", pad(colorize("  ◉ CINEMATIC SIGNAL FEED", ansiBgMatrix+ansiBold+ansiMatrix), 78)),
+		fmt.Sprintf("║ %s ║", pad(cinematicStream(r.eng.TickCount), 78)),
+	)
+
 	lines = append(lines, colorize("╚════════════════════════════════════════════════════════════════════════════════╝", ansiBold+ansiBlue))
 	return strings.Join(lines, "\n")
+}
+
+func cinematicStream(cycle int) string {
+	phase := []string{"LINK", "AUTH", "SYNC", "TRACK", "ANALYZE", "ROUTE"}[cycle%6]
+	load := strings.Repeat("█", (cycle%12)+1) + strings.Repeat("░", 12-((cycle%12)+1))
+	return colorize(fmt.Sprintf("%s://CORE-NET %s  DATA[%s]  STATUS=GREEN", phase, strings.Repeat("·", cycle%5+1), load), ansiMatrix)
 }
 
 func pad(s string, width int) string {
