@@ -108,6 +108,21 @@ func (r *Renderer) View() string {
 
 	lines = append(lines,
 		colorize("╠════════════════════════════════════════════════════════════════════════════════╣", ansiBold+ansiBlue),
+		fmt.Sprintf("║ %s ║", pad(colorize("  ◉ LIFECYCLE TIMELINE", ansiBgCharcoal+ansiBold+ansiIvory), 78)),
+	)
+	for _, p := range r.eng.Processes {
+		lines = append(lines, fmt.Sprintf("║ %s ║", pad(formatProcessLifecycle(p.Name, p.State, p.RemainingTicks), 78)))
+	}
+	if r.eng.GPU.RunningJob != nil {
+		j := r.eng.GPU.RunningJob
+		lines = append(lines, fmt.Sprintf("║ %s ║", pad(formatGPUJobLifecycle(j.JobID, "RUNNING/LOCKED", j.RemainingTicks), 78)))
+	}
+	for _, j := range r.eng.GPU.Queue {
+		lines = append(lines, fmt.Sprintf("║ %s ║", pad(formatGPUJobLifecycle(j.JobID, "QUEUED", j.RemainingTicks), 78)))
+	}
+
+	lines = append(lines,
+		colorize("╠════════════════════════════════════════════════════════════════════════════════╣", ansiBold+ansiBlue),
 		fmt.Sprintf("║ %s ║", pad(colorize("  ◉ AI CLUSTER NODE TELEMETRY", ansiBgNavy+ansiBold+ansiCyan), 78)),
 	)
 	for _, n := range r.eng.Nodes {
@@ -265,4 +280,25 @@ func (r *Renderer) cycleSummary() string {
 		return "No state transition event this cycle"
 	}
 	return strings.Join(parts, " | ")
+}
+
+func formatProcessLifecycle(name string, state any, remaining int) string {
+	stateLabel := fmt.Sprintf("%v", state)
+	timeline := "RUNNABLE -> DISPATCHED -> RUNNING -> SWITCH/WAIT -> COMPLETED"
+	if stateLabel == "Completed" {
+		timeline = "RUNNABLE -> DISPATCHED -> RUNNING -> SWITCH/WAIT -> [COMPLETED]"
+	} else if stateLabel == "Running" {
+		timeline = "RUNNABLE -> DISPATCHED -> [RUNNING] -> SWITCH/WAIT -> COMPLETED"
+	} else if stateLabel == "Ready" {
+		timeline = "[RUNNABLE] -> DISPATCHED -> RUNNING -> SWITCH/WAIT -> COMPLETED"
+	}
+	return fmt.Sprintf("PROC %-10s (%2d cycles left)  %s", name, remaining, timeline)
+}
+
+func formatGPUJobLifecycle(jobID, phase string, remaining int) string {
+	timeline := "QUEUED -> LOCKED/RUNNING -> RELEASED"
+	if phase == "RUNNING/LOCKED" {
+		timeline = "QUEUED -> [LOCKED/RUNNING] -> RELEASED"
+	}
+	return fmt.Sprintf("GPUJ %-10s (%2d cycles left)  %s", jobID, remaining, timeline)
 }

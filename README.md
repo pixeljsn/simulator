@@ -179,6 +179,24 @@ Use this checklist each cycle:
 4. **Prompt/Job queue**: upcoming dispatch order.
 5. **Telemetry stream**: exact event cause (newest first).
 
+
+### Lifecycle timeline panel
+
+The dashboard includes a **Lifecycle Timeline** panel so you can track each workload through stages instead of inferring from events alone.
+
+- CPU process timeline:
+  - `RUNNABLE -> DISPATCHED -> RUNNING -> SWITCH/WAIT -> COMPLETED`
+- GPU job timeline:
+  - `QUEUED -> LOCKED/RUNNING -> RELEASED`
+
+The current stage is wrapped in brackets, for example:
+
+- `[RUNNING]` for an active CPU process
+- `[LOCKED/RUNNING]` for the active GPU job
+- `[RUNNABLE]` for a queued-ready CPU process
+
+This is designed to make lifecycle progression visually obvious cycle-by-cycle.
+
 ## Test
 
 ```bash
